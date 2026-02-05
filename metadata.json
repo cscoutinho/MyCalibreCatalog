@@ -1,0 +1,5 @@
+{
+  "name": "Calibre Web Librarian",
+  "description": "A sophisticated frontend for your Calibre library JSON catalog. Features deep search and data visualization.",
+  "requestFramePermissions": []
+}
