@@ -250,7 +250,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ books, onTagClick }) => {
 const KpiCard = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: number }) => (
   <div className="bg-stone-900 p-6 rounded-xl border border-stone-800 shadow-lg flex items-center gap-4 hover:bg-stone-800/80 transition-colors group">
     <div className="p-4 bg-stone-950 rounded-lg border border-stone-800 group-hover:border-stone-700 transition-colors">
-      {React.cloneElement(icon as React.ReactElement, { className: "w-8 h-8 " + (icon as React.ReactElement).props.className })}
+      {React.isValidElement(icon) 
+        ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, { 
+            className: "w-8 h-8 " + ((icon as React.ReactElement<{ className?: string }>).props.className || "") 
+          }) 
+        : icon
+      }
     </div>
     <div>
       <p className="text-stone-500 text-xs font-bold uppercase tracking-widest">{label}</p>
