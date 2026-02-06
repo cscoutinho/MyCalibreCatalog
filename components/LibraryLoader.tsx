@@ -57,7 +57,7 @@ export const LibraryLoader: React.FC<LibraryLoaderProps> = ({ onLoaded }) => {
     setLoading(true);
     setError(null);
     try {
-        const response = await fetch('https://raw.githubusercontent.com/cscoutinho/MyCalibreCatalog/refs/heads/main/calibre_library.json');
+        const response = await fetch('https://raw.githubusercontent.com/cscoutinho/MyCalibreCatalog/refs/heads/base/calibre_library.json');
         if (!response.ok) {
             throw new Error(`Failed to fetch library: ${response.statusText}`);
         }
