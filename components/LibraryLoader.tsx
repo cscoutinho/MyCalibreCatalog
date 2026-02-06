@@ -1,82 +1,33 @@
 import React, { useCallback, useState } from 'react';
-import { Upload, FileJson, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, FileJson, AlertCircle, Loader2, CloudDownload } from 'lucide-react';
 import { CalibreLibrary, Book } from '../types';
 
 interface LibraryLoaderProps {
   onLoaded: (data: CalibreLibrary) => void;
 }
 
-// Sample data generator for demonstration purposes
-const generateSampleData = (): CalibreLibrary => {
-  const books: Book[] = [
-    {
-      id: 36,
-      title: "Definindo Liberdade: 50 Questões Fundamentais",
-      title_sort: "Definindo Liberdade: 50 Questões Fundamentais",
-      authors: "Ron Paul",
-      author_sort: "Mises Brasil",
-      publisher: "Mises",
-      timestamp: "2013-12-22T00:40:13-03:00",
-      tags: ["politics", "economics", "libertarian"],
-      formats: ["epub"],
-      languages: "por"
-    },
-    {
-      id: 37,
-      title: "Doutor Fausto",
-      title_sort: "Doutor Fausto",
-      authors: "Thomas Mann",
-      author_sort: "Mann, Thomas",
-      publisher: "Nova Fronteira",
-      timestamp: "2013-12-22T00:40:16-03:00",
-      tags: ["fiction", "classics", "german literature"],
-      formats: ["epub", "mobi"],
-      languages: "por"
-    },
-    {
-      id: 46,
-      title: "O Diabo",
-      title_sort: "Diabo, O",
-      authors: "Liev Tolstói",
-      author_sort: "Tolstói, Liev",
-      publisher: "L&PM Pocket",
-      timestamp: "2013-12-22T00:40:41-03:00",
-      tags: ["fiction", "russian literature", "short stories"],
-      formats: ["epub"],
-      languages: "por"
-    },
-    {
-      id: 101,
-      title: "Neuromancer",
-      title_sort: "Neuromancer",
-      authors: "William Gibson",
-      author_sort: "Gibson, William",
-      publisher: "Ace",
-      timestamp: "2023-01-15T10:00:00-00:00",
-      tags: ["sci-fi", "cyberpunk"],
-      formats: ["epub", "pdf"],
-      languages: "eng"
-    },
-    {
-      id: 102,
-      title: "The Hitchhiker's Guide to the Galaxy",
-      title_sort: "Hitchhiker's Guide to the Galaxy, The",
-      authors: "Douglas Adams",
-      author_sort: "Adams, Douglas",
-      publisher: "Pan Books",
-      timestamp: "2023-02-20T14:30:00-00:00",
-      tags: ["sci-fi", "comedy", "humor"],
-      formats: ["epub"],
-      languages: "eng"
-    }
-  ];
-  return { books };
-};
-
 export const LibraryLoader: React.FC<LibraryLoaderProps> = ({ onLoaded }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const validateAndLoad = (json: any) => {
+    // Handle both raw array or object with "books" key
+    let booksData: Book[] = [];
+    if (Array.isArray(json)) {
+        booksData = json;
+    } else if (json.books && Array.isArray(json.books)) {
+        booksData = json.books;
+    } else {
+        throw new Error("Invalid format. Expected root object with 'books' array.");
+    }
+
+    if (booksData.length > 0 && !booksData[0].title) {
+        throw new Error("Data doesn't look like book records (missing title).");
+    }
+
+    onLoaded({ books: booksData });
+  };
 
   const processFile = (file: File) => {
     setLoading(true);
@@ -86,25 +37,9 @@ export const LibraryLoader: React.FC<LibraryLoaderProps> = ({ onLoaded }) => {
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
-        // Basic check if it looks like the calibre export
         const json = JSON.parse(text);
-        
-        // Handle both raw array or object with "books" key
-        let booksData: Book[] = [];
-        if (Array.isArray(json)) {
-            booksData = json;
-        } else if (json.books && Array.isArray(json.books)) {
-            booksData = json.books;
-        } else {
-            throw new Error("Invalid format. Expected root object with 'books' array.");
-        }
-
-        if (booksData.length > 0 && !booksData[0].title) {
-            throw new Error("Data doesn't look like book records (missing title).");
-        }
-
-        onLoaded({ books: booksData });
-      } catch (err) {
+        validateAndLoad(json);
+      } catch (err: any) {
         console.error(err);
         setError("Failed to parse JSON. Please ensure it matches the Calibre export format.");
       } finally {
@@ -116,6 +51,24 @@ export const LibraryLoader: React.FC<LibraryLoaderProps> = ({ onLoaded }) => {
         setLoading(false);
     }
     reader.readAsText(file);
+  };
+
+  const loadFromCloud = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+        const response = await fetch('https://raw.githubusercontent.com/cscoutinho/MyCalibreCatalog/refs/heads/main/calibre_library.json');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch library: ${response.statusText}`);
+        }
+        const json = await response.json();
+        validateAndLoad(json);
+    } catch (err: any) {
+        console.error(err);
+        setError(`Cloud load failed: ${err.message}`);
+    } finally {
+        setLoading(false);
+    }
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -140,14 +93,6 @@ export const LibraryLoader: React.FC<LibraryLoaderProps> = ({ onLoaded }) => {
     if (e.target.files && e.target.files[0]) {
       processFile(e.target.files[0]);
     }
-  };
-
-  const loadSample = () => {
-    setLoading(true);
-    setTimeout(() => {
-        onLoaded(generateSampleData());
-        setLoading(false);
-    }, 800);
   };
 
   return (
@@ -205,10 +150,12 @@ export const LibraryLoader: React.FC<LibraryLoaderProps> = ({ onLoaded }) => {
 
         <div className="mt-8 text-center">
             <button 
-                onClick={loadSample}
-                className="text-sm text-stone-500 hover:text-amber-600 underline transition-colors font-medium"
+                onClick={loadFromCloud}
+                disabled={loading}
+                className="flex items-center gap-2 mx-auto text-sm text-stone-500 hover:text-amber-600 transition-colors font-medium disabled:opacity-50"
             >
-                Use sample data (Demo)
+                <CloudDownload className="w-4 h-4" />
+                Load from the cloud
             </button>
         </div>
       </div>
