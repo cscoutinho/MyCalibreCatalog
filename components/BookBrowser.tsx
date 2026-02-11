@@ -401,6 +401,22 @@ export const BookBrowser: React.FC<BookBrowserProps> = ({ books, initialSearch =
                         <DetailRow label="Language" value={selectedBook.languages.toUpperCase()} />
                         <DetailRow label="Added" value={new Date(selectedBook.timestamp).toLocaleDateString()} />
                     </div>
+
+                    {/* Formats Section */}
+                    <div>
+                        <span className="text-amber-500/80 text-[10px] uppercase tracking-widest block mb-2 font-bold">File Formats</span>
+                        <div className="flex gap-2 flex-wrap">
+                            {selectedBook.formats.length > 0 ? (
+                                selectedBook.formats.map(fmt => (
+                                    <span key={fmt} className="px-3 py-1.5 rounded-md text-xs font-mono font-medium bg-stone-800 border border-stone-700 text-stone-300 uppercase tracking-wide hover:border-stone-500 transition-colors cursor-default">
+                                        {fmt}
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-stone-500 text-sm italic">No formats listed</span>
+                            )}
+                        </div>
+                    </div>
                     
                     <div>
                         <span className="text-amber-500/80 text-[10px] uppercase tracking-widest block mb-3 font-bold">Tags</span>
