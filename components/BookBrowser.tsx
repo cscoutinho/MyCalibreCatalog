@@ -290,52 +290,54 @@ export const BookBrowser: React.FC<BookBrowserProps> = ({ books, initialSearch =
         </aside>
 
         {/* Main Grid Content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar bg-stone-950">
-            {paginatedBooks.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-stone-600 pb-20">
-                <Search className="w-16 h-16 mb-4 opacity-20" />
-                <p className="text-xl font-serif text-stone-500">No volumes found matching criteria.</p>
-                <p className="text-sm mt-2">Try adjusting your filters or boolean operators.</p>
-            </div>
-            ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-6 md:gap-8 pb-10">
-                {paginatedBooks.map((book) => (
-                <div 
-                    key={book.id}
-                    onClick={() => setSelectedBook(book)}
-                    className="group flex flex-col h-full cursor-pointer perspective-1000"
-                >
-                    <div className="relative aspect-[2/3] rounded-sm mb-4 shadow-2xl transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-amber-900/20 bg-stone-800 overflow-hidden">
-                    <BookCover book={book} className="w-full h-full" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-300"></div>
-                    </div>
-                    
-                    <div className="flex-1 flex flex-col min-h-0 px-1">
-                        <h3 className="text-stone-200 font-serif text-base leading-tight line-clamp-2 mb-1 group-hover:text-amber-500 transition-colors duration-300" title={book.title}>
-                            {book.title}
-                        </h3>
-                        <p className="text-stone-500 text-xs italic mb-2 line-clamp-1">{book.authors}</p>
+        <div className="flex-1 flex flex-col bg-stone-950 min-h-0">
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+                {paginatedBooks.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-stone-600 pb-20">
+                    <Search className="w-16 h-16 mb-4 opacity-20" />
+                    <p className="text-xl font-serif text-stone-500">No volumes found matching criteria.</p>
+                    <p className="text-sm mt-2">Try adjusting your filters or boolean operators.</p>
+                </div>
+                ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-6 md:gap-8 pb-6">
+                    {paginatedBooks.map((book) => (
+                    <div 
+                        key={book.id}
+                        onClick={() => setSelectedBook(book)}
+                        className="group flex flex-col h-full cursor-pointer perspective-1000"
+                    >
+                        <div className="relative aspect-[2/3] rounded-sm mb-4 shadow-2xl transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-amber-900/20 bg-stone-800 overflow-hidden">
+                        <BookCover book={book} className="w-full h-full" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-300"></div>
+                        </div>
                         
-                        <div className="mt-auto flex flex-wrap gap-1 opacity-80">
-                            {book.tags.slice(0, 3).map(t => {
-                                const colors = getTagColor(t);
-                                return (
-                                    <span key={t} className={`text-[9px] px-1 rounded-sm border ${colors.text} ${colors.border} bg-opacity-10 bg-stone-900`}>
-                                        {t}
-                                    </span>
-                                )
-                            })}
-                            {book.tags.length > 3 && <span className="text-[9px] text-stone-600">+{book.tags.length - 3}</span>}
+                        <div className="flex-1 flex flex-col min-h-0 px-1">
+                            <h3 className="text-stone-200 font-serif text-base leading-tight line-clamp-2 mb-1 group-hover:text-amber-500 transition-colors duration-300" title={book.title}>
+                                {book.title}
+                            </h3>
+                            <p className="text-stone-500 text-xs italic mb-2 line-clamp-1">{book.authors}</p>
+                            
+                            <div className="mt-auto flex flex-wrap gap-1 opacity-80">
+                                {book.tags.slice(0, 3).map(t => {
+                                    const colors = getTagColor(t);
+                                    return (
+                                        <span key={t} className={`text-[9px] px-1 rounded-sm border ${colors.text} ${colors.border} bg-opacity-10 bg-stone-900`}>
+                                            {t}
+                                        </span>
+                                    )
+                                })}
+                                {book.tags.length > 3 && <span className="text-[9px] text-stone-600">+{book.tags.length - 3}</span>}
+                            </div>
                         </div>
                     </div>
+                    ))}
                 </div>
-                ))}
+                )}
             </div>
-            )}
-            
-            {/* Pagination Footer - Inside the scrollable area */}
+
+            {/* Pagination Footer - Always visible at panel bottom */}
             {totalPages > 1 && (
-            <div className="py-6 flex justify-center items-center gap-6 shrink-0 z-10">
+            <div className="shrink-0 border-t border-stone-800 bg-stone-900/90 backdrop-blur px-4 md:px-8 py-4 flex justify-center items-center gap-6">
                 <button 
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
