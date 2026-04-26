@@ -39,9 +39,9 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-full bg-stone-950 text-stone-200">
+    <div className="flex h-full min-h-0 bg-stone-950 text-stone-200" style={{ minHeight: '100dvh' }}>
       {/* Sidebar Navigation */}
-      <nav className="w-20 md:w-64 bg-stone-900 border-r border-stone-800 flex flex-col justify-between shrink-0 transition-all duration-300">
+      <nav className="w-20 md:w-64 bg-stone-900 border-r border-stone-800 flex flex-col justify-between shrink-0 transition-all duration-300 overflow-y-auto">
         <div>
           <div className="p-6 flex items-center gap-3 border-b border-stone-800">
             <Library className="w-8 h-8 text-amber-600 shrink-0" />
@@ -91,7 +91,7 @@ export default function App() {
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-hidden relative flex flex-col bg-stone-950">
+      <main className="flex-1 min-h-0 overflow-hidden relative flex flex-col bg-stone-950">
         {renderContent()}
       </main>
     </div>
