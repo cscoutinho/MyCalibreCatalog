@@ -17,6 +17,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       VITE_GOOGLE_BOOKS_API_KEY: ${{ secrets.VITE_GOOGLE_BOOKS_API_KEY }}
@@ -32,6 +34,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Validate required secrets
+        run: |
+          if [ -z "$VITE_GOOGLE_BOOKS_API_KEY" ]; then
+            echo "::error::Missing VITE_GOOGLE_BOOKS_API_KEY. Add it in repository or github-pages environment secrets."
+            exit 1
+          fi
 
       - name: Build
         run: npm run build

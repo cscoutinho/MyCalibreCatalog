@@ -25,10 +25,11 @@ View your app in AI Studio: https://ai.studio/apps/drive/1S0mdNF4CGAChlyhGGeyeqV
 This repository is configured to deploy automatically to GitHub Pages via GitHub Actions.
 
 1. In GitHub, go to **Settings > Secrets and variables > Actions**.
-2. Add a repository secret named `GEMINI_API_KEY`.
-3. Add a repository secret named `VITE_GOOGLE_BOOKS_API_KEY`.
-4. In **Settings > Pages**, set **Source** to **GitHub Actions**.
-5. Push to the `main` branch.
+2. Add a secret named `GEMINI_API_KEY`.
+3. Add a secret named `VITE_GOOGLE_BOOKS_API_KEY`.
+4. If you are using the `github-pages` environment, add these secrets there as well in **Settings > Environments > github-pages > Secrets**.
+5. In **Settings > Pages**, set **Source** to **GitHub Actions**.
+6. Push to the `main` branch.
 
 After the workflow completes, your app will be available at:
 
