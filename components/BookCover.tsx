@@ -9,8 +9,8 @@ interface BookCoverProps {
   showSpine?: boolean;
 }
 
-const COVER_CACHE_PREFIX = 'calibre_cover_v2_';
-const GOOGLE_API_KEY = 'AIzaSyAlpo9g1Xnqbp0sRT8fNzUxBV_5SG3DYWQ';
+const COVER_CACHE_PREFIX = 'calibre_cover_v3_';
+const GOOGLE_BOOKS_API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY || '';
 
 export const BookCover: React.FC<BookCoverProps> = ({ book, className = "", showSpine = true }) => {
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
@@ -37,52 +37,52 @@ export const BookCover: React.FC<BookCoverProps> = ({ book, className = "", show
         if (!isMounted) return;
 
         try {
-            // Heuristic cleaning
-            const cleanTitle = book.title.split(':')[0].split('(')[0].trim();
-            // Get first author, remove potential role format like "Name [Role]"
-            const cleanAuthor = book.authors.split('&')[0].split(',')[0].replace(/\[.*?\]/g, '').trim();
-            
-            // --- Strategy 1: Open Library (No Key, Free) ---
-            // Search API is required to map Title/Author to an Edition/Cover
-            const olSearchUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(cleanTitle)}&author=${encodeURIComponent(cleanAuthor)}&limit=1&fields=cover_i`;
-            
-            const olRes = await fetch(olSearchUrl);
-            if (olRes.ok) {
-                const olData = await olRes.json();
-                const coverId = olData.docs?.[0]?.cover_i;
-                if (coverId) {
-                    const url = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
-                    if (isMounted) {
-                        setCoverUrl(url);
-                        localStorage.setItem(cacheKey, url);
-                        setLoading(false);
-                        return;
-                    }
-                }
-            }
+          // Heuristic cleaning
+          const cleanTitle = book.title.split(':')[0].split('(')[0].trim();
+          // Get first author, remove potential role format like "Name [Role]"
+          const cleanAuthor = book.authors.split('&')[0].split(',')[0].replace(/\[.*?\]/g, '').trim();
 
-            if (!isMounted) return;
-
-            // --- Strategy 2: Google Books (Fallback, Key Required) ---
-            // Intitle/Inauthor search
-            const q = `intitle:${encodeURIComponent(cleanTitle)}+inauthor:${encodeURIComponent(cleanAuthor)}`;
+          // Strategy 1: Google Books API (preferred)
+          if (GOOGLE_BOOKS_API_KEY) {
+            const q = `intitle:${cleanTitle} inauthor:${cleanAuthor}`;
             const gbRes = await fetch(
-                `https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1&fields=items(volumeInfo(imageLinks))&key=${GOOGLE_API_KEY}`
+              `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=1&fields=items(volumeInfo(imageLinks))&key=${GOOGLE_BOOKS_API_KEY}`
             );
-            
+
             if (gbRes.ok) {
-                const gbData = await gbRes.json();
-                const img = gbData.items?.[0]?.volumeInfo?.imageLinks;
-                const url = img?.thumbnail || img?.smallThumbnail;
-                
-                if (url && isMounted) {
-                    const secureUrl = url.replace('http:', 'https:');
-                    setCoverUrl(secureUrl);
-                    localStorage.setItem(cacheKey, secureUrl);
-                    setLoading(false);
-                    return;
-                }
+              const gbData = await gbRes.json();
+              const img = gbData.items?.[0]?.volumeInfo?.imageLinks;
+              const url = img?.thumbnail || img?.smallThumbnail;
+
+              if (url && isMounted) {
+                const secureUrl = url.replace('http:', 'https:');
+                setCoverUrl(secureUrl);
+                localStorage.setItem(cacheKey, secureUrl);
+                setLoading(false);
+                return;
+              }
             }
+          }
+
+          if (!isMounted) return;
+
+          // Strategy 2: Open Library fallback
+          const olSearchUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(cleanTitle)}&author=${encodeURIComponent(cleanAuthor)}&limit=1&fields=cover_i`;
+
+          const olRes = await fetch(olSearchUrl);
+          if (olRes.ok) {
+            const olData = await olRes.json();
+            const coverId = olData.docs?.[0]?.cover_i;
+            if (coverId) {
+              const url = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+              if (isMounted) {
+                setCoverUrl(url);
+                localStorage.setItem(cacheKey, url);
+                setLoading(false);
+                return;
+              }
+            }
+          }
 
             // --- Strategy 3: Not Found ---
             if (isMounted) {

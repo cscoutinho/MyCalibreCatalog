@@ -16,7 +16,8 @@ View your app in AI Studio: https://ai.studio/apps/drive/1S0mdNF4CGAChlyhGGeyeqV
 1. Install dependencies:
    `npm install`
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+3. Set the `VITE_GOOGLE_BOOKS_API_KEY` in [.env.local](.env.local) to your Google Books API key
+4. Run the app:
    `npm run dev`
 
 ## Deploy (GitHub Pages)
@@ -25,8 +26,9 @@ This repository is configured to deploy automatically to GitHub Pages via GitHub
 
 1. In GitHub, go to **Settings > Secrets and variables > Actions**.
 2. Add a repository secret named `GEMINI_API_KEY`.
-3. In **Settings > Pages**, set **Source** to **GitHub Actions**.
-4. Push to the `main` branch.
+3. Add a repository secret named `VITE_GOOGLE_BOOKS_API_KEY`.
+4. In **Settings > Pages**, set **Source** to **GitHub Actions**.
+5. Push to the `main` branch.
 
 After the workflow completes, your app will be available at:
 
