@@ -22,9 +22,13 @@ export const BookCover: React.FC<BookCoverProps> = ({ book, className = "", show
     const cached = localStorage.getItem(cacheKey);
     
     if (cached) {
-        if (cached !== '404') setCoverUrl(cached);
+      if (cached !== '404') {
+        setCoverUrl(cached);
         setLoading(false);
         return;
+      }
+      // A previous miss should not block future retries after API key/config changes.
+      localStorage.removeItem(cacheKey);
     }
 
     let isMounted = true;
@@ -86,7 +90,6 @@ export const BookCover: React.FC<BookCoverProps> = ({ book, className = "", show
 
             // --- Strategy 3: Not Found ---
             if (isMounted) {
-                localStorage.setItem(cacheKey, '404');
                 setLoading(false);
             }
 
