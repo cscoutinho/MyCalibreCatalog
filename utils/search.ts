@@ -52,23 +52,25 @@ const parseQuery = (query: string): SearchToken[] => {
  * Evaluates if a book matches a specific token.
  */
 const matchToken = (book: Book, token: SearchToken): boolean => {
-  const checkValue = (text: string) => {
+  const checkValue = (text: string | undefined): boolean => {
+    if (!text) return false;
     const content = text.toLowerCase();
     const target = token.value.toLowerCase();
     return token.type === 'phrase' ? content.includes(target) : content.includes(target);
   };
 
   const checkField = (field: string | undefined): boolean => {
+    const checkTags = () => (book.tags || []).some(t => checkValue(t));
     switch (field) {
       case 'title': return checkValue(book.title) || checkValue(book.title_sort);
       case 'author': return checkValue(book.authors) || checkValue(book.author_sort);
-      case 'tag': return book.tags.some(t => checkValue(t));
+      case 'tag': return checkTags();
       case 'publisher': return checkValue(book.publisher);
       default: 
         // If no field specified, check all searchable fields
         return checkValue(book.title) || 
                checkValue(book.authors) || 
-               book.tags.some(t => checkValue(t)) ||
+               checkTags() ||
                checkValue(book.publisher);
     }
   };

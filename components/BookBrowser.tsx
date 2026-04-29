@@ -39,8 +39,8 @@ export const BookBrowser: React.FC<BookBrowserProps> = ({ books, initialSearch =
     const tagCounts: Record<string, number> = {};
 
     books.forEach(b => {
-        b.formats.forEach(f => formatSet.add(f.trim().toLowerCase()));
-        b.tags.forEach(t => {
+        (b.formats || []).forEach(f => formatSet.add(f.trim().toLowerCase()));
+        (b.tags || []).forEach(t => {
             const clean = t.trim();
             if (clean) tagCounts[clean] = (tagCounts[clean] || 0) + 1;
         });
@@ -64,7 +64,7 @@ export const BookBrowser: React.FC<BookBrowserProps> = ({ books, initialSearch =
 
     // 2. Format Filter
     if (selectedFormat !== 'all') {
-        filtered = filtered.filter(book => book.formats.some(f => f.toLowerCase() === selectedFormat));
+        filtered = filtered.filter(book => (book.formats || []).some(f => f.toLowerCase() === selectedFormat));
     }
 
     // 3. Tag Combination Filter
@@ -72,15 +72,16 @@ export const BookBrowser: React.FC<BookBrowserProps> = ({ books, initialSearch =
         filtered = filtered.filter(book => {
             // Trim book tags to ensure matching works against selected (trimmed) tags
             // This handles cases where JSON data has trailing/leading whitespace (e.g., " mobi" or " scifi ")
+            const bookTags = book.tags || [];
             if (tagLogic === 'AND') {
                 // Must have ALL selected tags
                 return selectedTags.every(selectedTag => 
-                    book.tags.some(bookTag => bookTag.trim() === selectedTag)
+                    bookTags.some(bookTag => bookTag.trim() === selectedTag)
                 );
             } else {
                 // Must have AT LEAST ONE selected tag
                 return selectedTags.some(selectedTag => 
-                    book.tags.some(bookTag => bookTag.trim() === selectedTag)
+                    bookTags.some(bookTag => bookTag.trim() === selectedTag)
                 );
             }
         });
@@ -90,13 +91,13 @@ export const BookBrowser: React.FC<BookBrowserProps> = ({ books, initialSearch =
     return filtered.sort((a, b) => {
         switch (sortBy) {
             case 'date-newest':
-                return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+                return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime();
             case 'date-oldest':
-                return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+                return new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime();
             case 'title-asc':
-                return (a.title_sort || a.title).localeCompare(b.title_sort || b.title);
+                return (a.title_sort || a.title || '').localeCompare(b.title_sort || b.title || '');
             case 'author-asc':
-                return (a.author_sort || a.authors).localeCompare(b.author_sort || b.authors);
+                return (a.author_sort || a.authors || '').localeCompare(b.author_sort || b.authors || '');
             default:
                 return 0;
         }
@@ -318,7 +319,7 @@ export const BookBrowser: React.FC<BookBrowserProps> = ({ books, initialSearch =
                             <p className="text-stone-500 text-xs italic mb-2 line-clamp-1">{book.authors}</p>
                             
                             <div className="mt-auto flex flex-wrap gap-1 opacity-80">
-                                {book.tags.slice(0, 3).map(t => {
+                                {(book.tags || []).slice(0, 3).map(t => {
                                     const colors = getTagColor(t);
                                     return (
                                         <span key={t} className={`text-[9px] px-1 rounded-sm border ${colors.text} ${colors.border} bg-opacity-10 bg-stone-900`}>
@@ -326,7 +327,7 @@ export const BookBrowser: React.FC<BookBrowserProps> = ({ books, initialSearch =
                                         </span>
                                     )
                                 })}
-                                {book.tags.length > 3 && <span className="text-[9px] text-stone-600">+{book.tags.length - 3}</span>}
+                                {(book.tags || []).length > 3 && <span className="text-[9px] text-stone-600">+{(book.tags || []).length - 3}</span>}
                             </div>
                         </div>
                     </div>
